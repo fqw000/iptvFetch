@@ -38,7 +38,7 @@ jobs:
           
           # 运行脚本
           sed -i 's/\r$//' iptv_fetch_pro.sh
-          ./iptv_fetch_pro.sh
+          DEBUG_MOD=true ./iptv_fetch_pro.sh
           
           # 显示生成的文件结构
           echo "=== Generated Files Structure ==="
