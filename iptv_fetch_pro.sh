@@ -467,7 +467,7 @@ process_source_type() {
     
     local total_hosts
     total_hosts=$(wc -l < "$host_lines_file")
-    log_info "包含就主机，共发现 ${total_hosts} 个待测试主机，开始并发获取频道列表（并发数: 5）..."
+    log_info "包含就主机，共发现 ${total_hosts} 个待测试主机，开始并发获取频道列表（并发数: 10）..."
     
     # 初始化成功主机临时文件
     > "$success_hosts_tmp"
@@ -481,7 +481,7 @@ process_source_type() {
     
     # 使用 xargs 并发执行，每行作为一个参数传递
     if [[ -s "$host_lines_file" ]]; then
-        xargs -a "$host_lines_file" -I {} -P 5 bash -c '
+        xargs -a "$host_lines_file" -I {} -P 10 bash -c '
             fetch_channels_wrapper "$1" "$2" "$3"
         ' _ {} "$source_type" "$success_hosts_tmp"
     fi
@@ -587,5 +587,6 @@ EOF
     
     log_info "脚本执行完毕。"
 }
+
 
 main "$@"
