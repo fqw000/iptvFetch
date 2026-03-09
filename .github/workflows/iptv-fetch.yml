@@ -1,0 +1,81 @@
+name: IPTV Fetch Schedule
+
+on:
+  schedule:
+    # Cron 表达式 (UTC 时间)
+    # 目标：北京时间 每天 05:00 和 18:00
+    # 北京时间 05:00 = UTC 21:00 (前一天) -> cron: 0 21 * * *
+    # 北京时间 18:00 = UTC 10:00 (当天)   -> cron: 0 10 * * *
+    - cron: '0 21 * * *' 
+    - cron: '0 10 * * *'
+  
+  # 允许手动触发测试
+  workflow_dispatch:
+
+jobs:
+  fetch-iptv:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        run: |
+          # 确保脚本有执行权限
+          chmod +x iptv_fetch_pro.sh
+          # 创建必要的目录（虽然脚本里会创建，但以防万一）
+          mkdir -p response_files multicastList hotelList mqliveList
+          
+          # 安装可能缺失的工具 (ubuntu-latest 通常自带 perl 和 flock，但显式声明更稳妥)
+          sudo apt-get update
+          sudo apt-get install -y perl util-linux
+
+      - name: Run IPTV Fetch Script
+        run: |
+          # 开启调试模式可选 (设置环境变量)
+          # export DEBUG_MODE=true
+          
+          # 运行脚本
+          ./iptv_fetch_pro.sh
+          
+          # 显示生成的文件结构
+          echo "=== Generated Files Structure ==="
+          find . -type f -name "*.txt" -o -name "*.log" | head -20
+          
+          # 显示统计摘要 (读取日志最后部分)
+          if [ -f "iptv_fetch.log" ]; then
+            echo "=== Log Tail ==="
+            tail -n 20 iptv_fetch.log
+          fi
+
+      - name: Upload Results as Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: iptv-results-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            multicastList/
+            hotelList/
+            mqliveList/
+            iptv_fetch.log
+          retention-days: 5
+          if-no-files-found: warn
+
+      # --- 可选步骤：自动推送到仓库的 data 分支 ---
+      # 如果你希望结果直接存在于仓库中，而不是每次去下载 artifact，请取消下面注释
+      # 并需要在仓库 Settings -> Actions -> General 中允许 "Read and write permissions"
+      
+      # - name: Commit and Push Results
+      #   run: |
+      #     git config --local user.email "action@github.com"
+      #     git config --local user.name "GitHub Action"
+      #     git add multicastList/ hotelList/ mqliveList/ iptv_fetch.log
+      #     # 忽略没有变化的情况
+      #     if ! git diff --staged --quiet; then
+      #       git commit -m "Auto update IPTV lists: ${{ github.run_id }}"
+      #       git push origin HEAD:data --force
+      #     else
+      #       echo "No changes to commit."
+      #     fi
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
