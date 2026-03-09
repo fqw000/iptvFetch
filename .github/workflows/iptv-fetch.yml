@@ -37,6 +37,7 @@ jobs:
           # export DEBUG_MODE=true
           
           # 运行脚本
+          sed -i 's/\r$//' iptv_fetch_pro.sh
           ./iptv_fetch_pro.sh
           
           # 显示生成的文件结构
