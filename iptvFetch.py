@@ -33,7 +33,7 @@ from bs4 import BeautifulSoup
 DEFAULT_CONFIG = {
     "main_site": "https://tonkiang.us",
     "backup_site": "http://foodieguide.com/iptvsearch",
-    "request_timeout": 15,
+    "request_timeout": 30,
     "retry_count": 4,
     "base_sleep": 1,
     "max_concurrent_total": 5,
