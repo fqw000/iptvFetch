@@ -27,7 +27,7 @@ jobs:
           pip install requests beautifulsoup4 colorlog
 
       - name: Run IPTV fetcher script
-        run: python iptv_fetch_v3_notest.py
+        run: python iptvFetch.py
         # 如果需要传入参数，例如指定省份，可以写成：
         # run: python iptvFetch.py "1-5" --type multicast hotel
 
